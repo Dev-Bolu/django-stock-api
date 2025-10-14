@@ -4,10 +4,12 @@ from datetime import date
 # Create your models here.
 class StoreItem(models.Model):
     item = models.CharField(max_length=100, unique=True)
+    cost_price = models.DecimalField(max_digits=10, decimal_places=0) # Cost price per item
+    selling_price = models.DecimalField(max_digits=10, decimal_places=0) # Selling
     store_in = models.PositiveIntegerField(default=0) # Total received into store
     store_out = models.PositiveIntegerField(default=0) # Total moved out from store
     remaining_stock = models.PositiveIntegerField(default=0) # remaining stock in store
- 
+
     def __str__(self):
         return self.item
     
@@ -23,10 +25,16 @@ class BarStock(models.Model):
     added_stock = models.PositiveIntegerField(default=0) # stock added to bar
     sold = models.PositiveIntegerField(default=0) # stock sold from bar
     closing_stock = models.PositiveIntegerField(default=0, editable=False) # closing stock in bar
+    total_price = models.DecimalField(max_digits=10, decimal_places=0, default=0, editable=False) # total sales amount
+    profit = models.DecimalField(max_digits=10, decimal_places=0, default=0, editable=False) # total profit amount
     
     def save(self, *args, **kwargs):
         ''' Closing stock calculation = opening stock + added stock - sold '''
         self.closing_stock = self.open_stock + self.added_stock - self.sold
+        
+        # Update total sales value and profit
+        self.total_price = self.sold * self.item.selling_price  
+        self.profit = self.sold * (self.item.selling_price - self.item.cost_price)
         #Update store when goods move out to bar
         if self.added_stock > 0:
             self.item.store_out += self.added_stock
