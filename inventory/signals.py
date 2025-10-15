@@ -1,29 +1,91 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-from datetime import date
-from .models import StoreItem, BarStock
+from datetime import date, timedelta
+from django.db import transaction
+from .models import StoreItem, StoreItemHistory, BarStock, ItemValue
 
-
+# -----------------------
+# StoreItem -> StoreItemHistory
+# -----------------------
 @receiver(post_save, sender=StoreItem)
-def sync_bar_stock_with_store_out(sender, instance, **kwargs):
-    """
-    When a StoreItem's store_out changes, automatically update or create
-    today's BarStock record for that item with matching added_stock.
-    """
+def create_daily_storeitem_history(sender, instance, **kwargs):
+    today = date.today()
+    yesterday = today - timedelta(days=1)
 
-    # Step 1: Safely update remaining stock (avoid recursion by using update())
-    expected_remaining = instance.store_in - instance.store_out
-    if instance.remaining_stock != expected_remaining:
-        StoreItem.objects.filter(pk=instance.pk).update(remaining_stock=expected_remaining)
+    with transaction.atomic():
+        history, created = StoreItemHistory.objects.get_or_create(
+            item=instance,
+            record_date=today,
+            defaults={
+                'store_in': instance.store_in or 0,
+                'store_out': instance.store_out or 0,
+                'remaining_stock': 0,
+            }
+        )
 
-    # Step 2: Ensure a bar record exists for today
-    bar_record, created = BarStock.objects.get_or_create(
-        item=instance,
-        record_date=date.today(),
-        defaults={'open_stock': 0, 'added_stock': 0, 'sold': 0}
-    )
+        try:
+            yesterday_history = StoreItemHistory.objects.get(item=instance, record_date=yesterday)
+            yesterday_remaining = yesterday_history.remaining_stock
+        except StoreItemHistory.DoesNotExist:
+            yesterday_remaining = 0
 
-    # Step 3: Sync added_stock with store_out (difference since yesterday)
-    # We assume store_out reflects *total* moved to bar, not daily increment.
-    bar_record.added_stock = instance.store_out
-    bar_record.save(update_fields=['added_stock'])
+        history.remaining_stock = yesterday_remaining + (instance.store_in or 0) - (instance.store_out or 0)
+        history.store_in = instance.store_in or 0
+        history.store_out = instance.store_out or 0
+        history.save(update_fields=['store_in', 'store_out', 'remaining_stock'])
+
+
+# -----------------------
+# StoreItem -> BarStock
+# -----------------------
+@receiver(post_save, sender=StoreItem)
+def sync_barstock_added_stock(sender, instance, **kwargs):
+    today = date.today()
+    yesterday = today - timedelta(days=1)
+
+    with transaction.atomic():
+        bar_stock, created = BarStock.objects.get_or_create(
+            item=instance,
+            record_date=today,
+            defaults={'open_stock': 0, 'added_stock': 0, 'sold': 0}
+        )
+
+        # Carry forward yesterday's closing stock
+        try:
+            yesterday_stock = BarStock.objects.get(item=instance, record_date=yesterday)
+            bar_stock.open_stock = yesterday_stock.closing_stock
+        except BarStock.DoesNotExist:
+            bar_stock.open_stock = 0
+
+        # Sync added_stock with daily total
+        if bar_stock.added_stock != instance.store_out:
+            bar_stock.added_stock = instance.store_out or 0
+
+        bar_stock.save(update_fields=['open_stock', 'added_stock'])
+
+
+# -----------------------
+# BarStock -> ItemValue
+# -----------------------
+@receiver(post_save, sender=BarStock)
+def create_daily_item_value(sender, instance, **kwargs):
+    today = instance.record_date
+    store_item = instance.item
+
+    with transaction.atomic():
+        item_value, created = ItemValue.objects.get_or_create(
+            item=store_item,
+            date_recorded=today,
+            defaults={
+                'sold': instance.sold or 0,
+                'cost_price': store_item.cost_price,
+                'selling_price': store_item.selling_price,
+            }
+        )
+
+        item_value.sold = instance.sold or 0
+        item_value.cost_price = store_item.cost_price
+        item_value.selling_price = store_item.selling_price
+        item_value.total_price = (instance.sold or 0) * store_item.selling_price
+        item_value.profit = (instance.sold or 0) * (store_item.selling_price - store_item.cost_price)
+        item_value.save(update_fields=['sold', 'cost_price', 'selling_price', 'total_price', 'profit'])
