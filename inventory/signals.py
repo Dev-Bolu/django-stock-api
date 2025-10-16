@@ -3,6 +3,9 @@ from django.dispatch import receiver
 from datetime import date, timedelta
 from django.db import transaction
 from .models import StoreItem, StoreItemHistory, BarStock, ItemValue
+from django.conf import settings
+from rest_framework.authtoken.models import Token
+
 
 # -----------------------
 # StoreItem -> StoreItemHistory
@@ -89,3 +92,8 @@ def create_daily_item_value(sender, instance, **kwargs):
         item_value.total_price = (instance.sold or 0) * store_item.selling_price
         item_value.profit = (instance.sold or 0) * (store_item.selling_price - store_item.cost_price)
         item_value.save(update_fields=['sold', 'cost_price', 'selling_price', 'total_price', 'profit'])
+
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_auth_token(sender, instance=None, created=False, **kwargs):
+    if created:
+        Token.objects.create(user=instance)
