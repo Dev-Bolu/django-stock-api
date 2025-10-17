@@ -21,7 +21,7 @@ class StoreItemHistoryAdmin(admin.ModelAdmin):
 @admin.register(BarStock)
 class BarStockAdmin(admin.ModelAdmin):
     list_display = ('item', 'record_date', 'open_stock', 'added_stock', 'sold', 'closing_stock')
-    list_editable = ('added_stock', 'sold',)
+    list_editable = ( 'sold',)
     list_filter = ('record_date', 'item__item')
     ordering = ('-record_date', 'item')
 

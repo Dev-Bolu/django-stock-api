@@ -13,7 +13,7 @@ class StoreItem(models.Model):
     selling_price = models.DecimalField(max_digits=10, decimal_places=2)
     store_in = models.PositiveIntegerField(default=0)
     store_out = models.PositiveIntegerField(default=0)
-    remaining_stock = models.PositiveIntegerField(default=0)
+    remaining_stock = models.PositiveIntegerField(default=0, editable=False)
 
     def __str__(self):
         return self.item
@@ -32,7 +32,7 @@ class StoreItemHistory(models.Model):
     record_date = models.DateField(default=date.today)
     store_in = models.PositiveIntegerField(default=0)
     store_out = models.PositiveIntegerField(default=0)
-    remaining_stock = models.PositiveIntegerField(default=0)
+    remaining_stock = models.PositiveIntegerField(default=0, editable=False)
 
     class Meta:
         unique_together = ('item', 'record_date')
@@ -87,3 +87,7 @@ class ItemValue(models.Model):
 
     def __str__(self):
         return f"{self.item.item} - {self.date_recorded}"
+ 
+ 
+ 
+ 
