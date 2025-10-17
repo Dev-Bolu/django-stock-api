@@ -7,3 +7,6 @@ class InventoryConfig(AppConfig):
     def ready(self):
         # Import signal handlers
         import inventory.signals
+        
+        
+    

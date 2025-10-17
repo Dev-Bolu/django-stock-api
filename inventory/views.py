@@ -1,4 +1,5 @@
-from rest_framework import viewsets, permissions, filters, generics, serializers
+# inventory/views.py
+from rest_framework import viewsets, filters, generics
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authtoken.models import Token
@@ -14,32 +15,13 @@ from .serializers import (
     StoreItemHistorySerializer,
     BarStockSerializer,
     ItemValueSerializer,
+    UserRegisterSerializer,
 )
+from .permissions import IsBarManagerStaffOrReadOnly
 
 
 # ----------------------
-# Custom Permission
-# ----------------------
-class IsBarManagerOrReadOnly(permissions.BasePermission):
-    """
-    Allow full CRUD for superusers/managers.
-    Regular staff can only edit the 'sold' field.
-    """
-    def has_object_permission(self, request, view, obj):
-        if request.user.is_superuser:
-            return True
-
-        # Staff can only edit 'sold' field
-        if request.method in ['PATCH', 'PUT']:
-            allowed_fields = ['sold']
-            return set(request.data.keys()).issubset(allowed_fields)
-
-        # Read-only for GET, HEAD, OPTIONS
-        return request.method in permissions.SAFE_METHODS
-
-
-# ----------------------
-# ViewSets
+# StoreItem Views
 # ----------------------
 class StoreItemViewSet(viewsets.ModelViewSet):
     queryset = StoreItem.objects.all()
@@ -58,20 +40,26 @@ class StoreItemHistoryViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
 
+# ----------------------
+# BarStock View
+# ----------------------
 class BarStockViewSet(viewsets.ModelViewSet):
     queryset = BarStock.objects.all()
     serializer_class = BarStockSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated, IsBarManagerOrReadOnly]
+    permission_classes = [IsBarManagerStaffOrReadOnly]
     filter_backends = [filters.OrderingFilter]
     ordering_fields = ['record_date', 'closing_stock']
 
 
+# ----------------------
+# ItemValue View
+# ----------------------
 class ItemValueViewSet(viewsets.ModelViewSet):
     queryset = ItemValue.objects.all()
     serializer_class = ItemValueSerializer
     authentication_classes = [TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsBarManagerStaffOrReadOnly]
 
 
 # ----------------------
@@ -79,7 +67,7 @@ class ItemValueViewSet(viewsets.ModelViewSet):
 # ----------------------
 class CustomAuthToken(ObtainAuthToken):
     """
-    Returns user info + token when login is successful.
+    Returns token + user info when login succeeds.
     """
     @csrf_exempt
     def post(self, request, *args, **kwargs):
@@ -98,7 +86,7 @@ class CustomAuthToken(ObtainAuthToken):
 @permission_classes([IsAuthenticated])
 def logout_user(request):
     """
-    Deletes the user's token on logout.
+    Deletes user's token on logout.
     """
     token = getattr(request.user, 'auth_token', None)
     if token:
@@ -107,27 +95,19 @@ def logout_user(request):
 
 
 # ----------------------
-# User Registration
+# User Registration View
 # ----------------------
-class UserRegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        # Create user with hashed password
-        user = User.objects.create_user(**validated_data)
-        # Automatically create token for the new user
-        Token.objects.create(user=user)
-        return user
-
-
 class UserRegisterView(generics.CreateAPIView):
     """
-    API endpoint to register a new user.
-    Returns 201 Created + token.
+    Register new user and return auth token.
     """
     queryset = User.objects.all()
     permission_classes = [AllowAny]
     serializer_class = UserRegisterSerializer
+
+    def create(self, request, *args, **kwargs):
+        response = super().create(request, *args, **kwargs)
+        user = User.objects.get(username=request.data['username'])
+        token, created = Token.objects.get_or_create(user=user)
+        response.data['token'] = token.key
+        return response

@@ -24,7 +24,8 @@ router.register(r'item-value', ItemValueViewSet, basename='itemvalue')
 # ----------------------
 urlpatterns = [
     path('', include(router.urls)),               # All ViewSets
-    path('auth/login/', CustomAuthToken.as_view(), name='api_login'),  # Login
-    path('auth/logout/', logout_user, name='api_logout'),              # Logout
-    path('auth/register/', UserRegisterView.as_view(), name='api_register'),  # Registration
+    path('login/', CustomAuthToken.as_view(), name='api_login'),  # Login
+    path('logout/', logout_user, name='api_logout'),              # Logout
+    path('register/', UserRegisterView.as_view(), name='api_register'),  # Registration
+    
 ]
