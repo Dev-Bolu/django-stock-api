@@ -1,108 +1,41 @@
+from inventory.models import StoreItem
 from decimal import Decimal
-from inventory.models import StoreItem, BarStock  # Change 'inventory' to your actual app name
 
-items_data = {
-    "33": 725,
-    "5 alive pulpy": 1166,
-    "Action bitter pet": 294,
-    "andre rose": 9200,
-    "Bacardi Gold": 15000,
-    "Bacardi White": 13000,
-    "baron": 5000,
-    "belaire rose": 70000,
-    "best cream big": 5300,
-    "best cream small": 1400,
-    "best whiskey big": 3500,
-    "best whiskey small": 1000,
-    "big Heineken": 1350,
-    "big stout": 1333,
-    "black bullet": 1870,
-    "Black goldberg": 658,
-    "blue bullet": 1000,
-    "budwier": 875,
-    "campari": 15333,
-    "Captain Jack": 2800,
-    "chandor": 4000,
-    "chi active": 1350,
-    "chi exotic": 1250,
-    "climax": 600,
-    "coco samba": 350,
-    "coke": 400,
-    "Coke plastic": 358,
-    "desperado bottle": 803,
-    "desperado can": 812.5,
-    "fanta": 400,
-    "fayrouz can": 479,
-    "Fearless": 358,
-    "four cousin": 6500,
-    "goldberg bottle": 725,
-    "goldberg can": 600,
-    "guiness stout can": 900,
-    "Gulder": 866,
-    "heineken can": 600,
-    "Henessy small": 30000,
-    "Hennessy VS": 29400,
-    "Hennessy VSOP": 90000,
-    "hollandia": 1600,
-    "jack daniel's": 25000,
-    "jager melter": 12500,
-    "jameson black": 35000,
-    "jameson green": 20000,
-    "jekomo": 320,
-    "Lacoco": 375,
-    "M/Heineken": 760,
-    "Maltina bottle": 541,
-    "maltina can": 550,
-    "Martel blue swift": 70000,
-    "Martel vs": 45000,
-    "matini rose": 12500,
-    "medium stout": 900,
-    "moet rose": 50000,
-    "monster": 900,
-    "Origin beer can": 750,
-    "Origin bitters": 3166,
-    "origin pet (NEW)": 938,
-    "Peaks Yoghurt": 1520,
-    "power horse": 1600,
-    "Prediator": 417,
-    "red bull": 1200,
-    "red label": 19500,
-    "remy martins": 70000,
-    "rich lady": 3500,
-    "robertson": 6500,
-    "sierra tequla": 15000,
-    "Smirnoff CAN": 600,
-    "sprite": 400,
-    "star radler": 600,
-    "super komando": 258,
-    "tiger": 725,
-    "trophy bottle": 708,
-    "trophy can": 600,
-    "viju yoghurt": 500,
-    "water": 125,
-}
+def run():
+    StoreItem.objects.all().delete()
+    print("🗑️ Old items deleted.\n")
 
-for name, cost in items_data.items():
-    cost_decimal = Decimal(str(cost))
-    selling_price = cost_decimal * Decimal("2")
+    items_data = [
+        ("33 Export", 400, 600, 50), ("5 Alive Pulpy", 700, 1000, 20), ("Action Bitter Pet", 200, 300, 100),
+        ("Andre Rose", 3500, 5000, 10), ("Bacardi Gold", 4500, 6000, 5), ("Bacardi White", 4500, 6000, 5),
+        ("Baron", 3000, 4000, 8), ("Belaire Rose", 15000, 20000, 3), ("Best Whiskey Small", 500, 700, 40),
+        ("Best Cream Medium", 800, 1000, 35), ("Best Whiskey Big", 1200, 1500, 25), ("Best Whiskey Medium", 900, 1100, 30),
+        ("Best Cream Big", 1500, 2000, 15), ("Big Stout", 700, 1000, 50), ("Black Bullet", 700, 1000, 50),
+        ("Black Goldberg", 600, 800, 50), ("Black Trophy", 600, 800, 50), ("Blue Bullet", 700, 1000, 50),
+        ("Budweiser", 800, 1000, 50), ("Campari", 2500, 3500, 20), ("Captain Jack", 900, 1200, 25),
+        ("Chandor", 1500, 2000, 15), ("Chi Active", 700, 1000, 20), ("Chi Exotic", 700, 1000, 20),
+        ("Climax", 500, 700, 60), ("Coco Samba", 600, 800, 50), ("Coke", 400, 600, 100),
+        ("Desperado Bottle", 1200, 1500, 20), ("Eliot", 700, 900, 40), ("Fanta", 400, 600, 80),
+        ("Fayrouz Can", 500, 700, 50), ("Fearless", 500, 700, 50), ("Four Cousins", 3500, 4500, 10),
+        ("Goldberg Bottle", 600, 800, 80), ("Guinness Stout Can", 800, 1000, 60), ("Gulder", 700, 900, 60),
+        ("Hennessy Small", 7500, 10000, 5), ("Hennessy VS", 15000, 20000, 3), ("Hennessy VSOP", 25000, 30000, 2),
+        ("Hollandia", 600, 800, 50), ("Jack Daniel's", 18000, 22000, 2), ("Jager Melter", 6000, 7500, 4),
+        ("Jameson Black", 17000, 20000, 3), ("Jameson Green", 15000, 18000, 3), ("Jekomo", 700, 900, 40),
+        ("Lacoco", 700, 900, 40), ("M/Heineken", 900, 1200, 60), ("Maltina Can", 500, 700, 50),
+        ("Martel Blue Swift", 18000, 22000, 2), ("Martel VS", 15000, 20000, 3), ("Martini Rose", 7000, 9000, 4),
+        ("M/ Stout", 900, 1200, 50), ("Moet Rose", 25000, 30000, 2), ("Monster", 800, 1000, 30),
+        ("Origin Beer Bottle", 700, 900, 60), ("Origin Beer Can", 800, 1000, 40), ("Origin Bitters Bottle", 700, 900, 50),
+        ("Origin Pet (New)", 600, 800, 70), ("Peaks Yoghurt", 500, 700, 50)
+    ]
 
-    store_item, _ = StoreItem.objects.get_or_create(
-        item=name.strip(),
-        defaults={"store_in": 100, "store_out": 0, "remaining_stock": 100},
-    )
+    for name, cost, sell, stock in items_data:
+        StoreItem.objects.create(
+            item=name,
+            cost_price=Decimal(cost),
+            selling_price=Decimal(sell),
+            store_in=stock,
+            remaining_stock=stock
+        )
+        print(f"✅ {name} added.")
 
-    bar_item, created = BarStock.objects.get_or_create(
-        item=store_item,
-        defaults={
-            "cost_price": cost_decimal,
-            "selling_price": selling_price,
-            "open_stock": 0,
-            "added_stock": 0,
-            "sold": 0,
-        },
-    )
-
-    if created:
-        print(f"✅ Created: {store_item.item}")
-    else:
-        print(f"⚠️ Exists: {store_item.item}")
+    print("\n🎉 All items added successfully.")

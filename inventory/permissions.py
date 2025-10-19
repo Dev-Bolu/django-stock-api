@@ -5,36 +5,50 @@ class IsBarManagerStaffOrReadOnly(permissions.BasePermission):
     """
     Custom permission:
     - Superuser & BarManager: full CRUD
-    - Staff: read all, can edit only 'sold'
+    - Staff: read all except ItemValue, can edit only 'sold'
     - Accountant: read-only
     """
 
     def has_permission(self, request, view):
-        # Allow read for any authenticated user
+        user = request.user
+        if not user or not user.is_authenticated:
+            return False
+
+        # Deny staff access to ItemValue views entirely
+        if user.groups.filter(name='Staff').exists():
+            if hasattr(view, 'queryset') and view.queryset.model.__name__ == 'ItemValue':
+                return False
+
+        # Allow read for all authenticated users except staff on ItemValue
         if request.method in permissions.SAFE_METHODS:
-            return request.user and request.user.is_authenticated
-
-        # Superusers & BarManagers can write
-        if request.user.is_superuser or request.user.groups.filter(name='BarManager').exists():
             return True
 
-        # Staff can write, but limited at object level
-        if request.user.groups.filter(name='Staff').exists():
+        # Superuser & BarManager full access
+        if user.is_superuser or user.groups.filter(name='BarManager').exists():
             return True
 
-        # Accountant cannot write
-        if request.user.groups.filter(name='Accountant').exists():
+        # Staff can write (but restricted later)
+        if user.groups.filter(name='Staff').exists():
+            return True
+
+        # Accountant read-only
+        if user.groups.filter(name='Accountant').exists():
             return False
 
         return False
 
     def has_object_permission(self, request, view, obj):
-        # Superuser & BarManager can do anything
-        if request.user.is_superuser or request.user.groups.filter(name='BarManager').exists():
+        user = request.user
+
+        # Superuser & BarManager full access
+        if user.is_superuser or user.groups.filter(name='BarManager').exists():
             return True
 
-        # Staff can only edit allowed fields
-        if request.user.groups.filter(name='Staff').exists():
+        # Block staff from ItemValue at object level too
+        if user.groups.filter(name='Staff').exists():
+            if obj.__class__.__name__ == 'ItemValue':
+                return False
+
             if request.method in ['PUT', 'PATCH']:
                 allowed_fields = getattr(
                     getattr(view.serializer_class, 'Meta', None),
@@ -42,10 +56,11 @@ class IsBarManagerStaffOrReadOnly(permissions.BasePermission):
                     []
                 )
                 return set(request.data.keys()).issubset(allowed_fields)
+
             return request.method in permissions.SAFE_METHODS
 
-        # Accountant: read-only
-        if request.user.groups.filter(name='Accountant').exists():
+        # Accountant read-only
+        if user.groups.filter(name='Accountant').exists():
             return request.method in permissions.SAFE_METHODS
 
         return False

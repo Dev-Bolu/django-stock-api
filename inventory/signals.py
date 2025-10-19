@@ -8,12 +8,11 @@ from rest_framework.authtoken.models import Token
 
 
 # -----------------------
-# StoreItem -> StoreItemHistory
+# StoreItem → StoreItemHistory
 # -----------------------
 @receiver(post_save, sender=StoreItem)
 def create_daily_storeitem_history(sender, instance, **kwargs):
     today = date.today()
-    yesterday = today - timedelta(days=1)
 
     with transaction.atomic():
         history, created = StoreItemHistory.objects.get_or_create(
@@ -22,19 +21,14 @@ def create_daily_storeitem_history(sender, instance, **kwargs):
             defaults={
                 'store_in': instance.store_in or 0,
                 'store_out': instance.store_out or 0,
-                'remaining_stock': 0,
+                'remaining_stock': (instance.store_in or 0) - (instance.store_out or 0),
             }
         )
 
-        try:
-            yesterday_history = StoreItemHistory.objects.get(item=instance, record_date=yesterday)
-            yesterday_remaining = yesterday_history.remaining_stock
-        except StoreItemHistory.DoesNotExist:
-            yesterday_remaining = 0
-
-        history.remaining_stock = yesterday_remaining + (instance.store_in or 0) - (instance.store_out or 0)
+        # Always update values if they change
         history.store_in = instance.store_in or 0
         history.store_out = instance.store_out or 0
+        history.remaining_stock = (instance.store_in or 0) - (instance.store_out or 0)
         history.save(update_fields=['store_in', 'store_out', 'remaining_stock'])
 
 

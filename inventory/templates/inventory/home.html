@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<h2>Welcome, {{ user.username }} 👋</h2>
+
+<p>You are now logged in to the Stock Management System.</p>
+
+<ul>
+  <li><a href="{% url 'logout' %}">Logout</a></li>
+  <li><a href="{% url 'api-root' %}">Go to API Dashboard</a></li>
+</ul>
+
+{% if messages %}
+  <ul>
+    {% for message in messages %}
+      <li>{{ message }}</li>
+    {% endfor %}
+  </ul>
+{% endif %}
+{% endblock %}
