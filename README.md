@@ -79,22 +79,23 @@ Example response:
 Use that token for subsequent requests.
 
 📦 API Endpoints
+
 🧱 Store Items
 Method	Endpoint	Description
-GET	/api/store-items/	List all items
-POST	/api/store-items/	Create new item
-GET	/api/store-items/{id}/	Retrieve item
-PUT/PATCH	/api/store-items/{id}/	Update item
-DELETE	/api/store-items/{id}/	Delete item
+curl -X GET http://127.0.0.1:8000/api/store-items/	List all items
+curl -X POST http://127.0.0.1:8000/api/store-items/	Create new item
+curl -X GET http://127.0.0.1:8000/api/store-items/{id}/	Retrieve item
+curl -X PUT http://127.0.0.1:8000	/api/store-items/{id}/	Update item
+curl -X DELETE http://127.0.0.1:8000/api/store-items/{id}/	Delete item
 
 🍾 Bar Stock
 Method	Endpoint	Description
-GET	/api/bar-stock/	List bar stock
-POST	/api/bar-stock/	Add bar stock record
+curl -X GET http://127.0.0.1:8000/api/bar-stock/	List bar stock
+curl -X POST http://127.0.0.1:8000/api/bar-stock/	Add bar stock record
 
 💰 Item Value
 Method	Endpoint	Description
-GET	/api/item-value/	View sales summary per item
+curl -X GET http://127.0.0.1:8000/api/item-value/	View sales summary per item
 
 🧪 Testing with curl
 ✅ Create a Store Item
