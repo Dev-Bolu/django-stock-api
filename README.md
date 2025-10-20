@@ -82,41 +82,46 @@ Use that token for subsequent requests.
 
 🧱 Store Items
 Method	Endpoint	Description
-curl -X GET http://127.0.0.1:8000/api/store-items/	List all items
-curl -X POST http://127.0.0.1:8000/api/store-items/	Create new item
-curl -X GET http://127.0.0.1:8000/api/store-items/{id}/	Retrieve item
-curl -X PUT http://127.0.0.1:8000	/api/store-items/{id}/	Update item
-curl -X DELETE http://127.0.0.1:8000/api/store-items/{id}/	Delete item
+1. curl -X GET http://127.0.0.1:8000/api/store-items/     List all items
+2. curl -X POST http://127.0.0.1:8000/api/store-items/	Create new item
+3. curl -X GET http://127.0.0.1:8000/api/store-items/{id}/	Retrieve item
+4. curl -X PUT http://127.0.0.1:8000	/api/store-items/{id}/	Update item
+5. curl -X DELETE http://127.0.0.1:8000/api/store-items/{id}/	Delete item
 
 🍾 Bar Stock
 Method	Endpoint	Description
-curl -X GET http://127.0.0.1:8000/api/bar-stock/	List bar stock
-curl -X POST http://127.0.0.1:8000/api/bar-stock/	Add bar stock record
+1. curl -X GET http://127.0.0.1:8000/api/bar-stock/	List bar stock
+2. curl -X POST http://127.0.0.1:8000/api/bar-stock/	Add bar stock record
 
 💰 Item Value
-Method	Endpoint	Description
-curl -X GET http://127.0.0.1:8000/api/item-value/	View sales summary per item
+Method	Endpoint Description
+1. curl -X GET http://127.0.0.1:8000/api/item-value/	View sales summary per item
 
 🧪 Testing with curl
 ✅ Create a Store Item
+
 curl -X POST http://127.0.0.1:8000/api/store-items/ \
      -H "Authorization: Token 751069c378c06d0cfd39ec41d0345ab60c649bc3" \
      -H "Content-Type: application/json" \
      -d '{"item": "ball", "store_in": 50, "store_out": 10, "cost_price": 1000, "selling_price": 1500}'
 
 ✅ Get all items
+
 curl -X GET http://127.0.0.1:8000/api/store-items/ \
      -H "Authorization: Token 751069c378c06d0cfd39ec41d0345ab60c649bc3"
      
 ✅ Get daily sales summary
+
 curl -X GET http://127.0.0.1:8000/api/reports/daily/ \
      -H "Authorization: Token 751069c378c06d0cfd39ec41d0345ab60c649bc3"
 
 ✅ Get weekly sales summary
+
 curl -X GET http://127.0.0.1:8000/api/reports/weekly/ \
      -H "Authorization: Token b97fabe78b0279c4a84cde3573f5def3e82bf870"
 
 ✅ Get monthly sales summary
+
 curl -X GET http://127.0.0.1:8000/api/reports/monthly/ \
      -H "Authorization: Token b97fabe78b0279c4a84cde3573f5def3e82bf870"
 
