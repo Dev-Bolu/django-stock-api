@@ -63,12 +63,13 @@ Server runs at:
 1️⃣ Register a user
 curl -X POST http://127.0.0.1:8000/api/register/ \
      -H "Content-Type: application/json" \
-     -d '{"username":"manager","password":"2025"}'
+     -d '{"username":"managerbola","password":"   bola2025"}'
+
 
 2️⃣ Login and get token
 curl -X POST http://127.0.0.1:8000/api/login/ \
      -H "Content-Type: application/json" \
-     -d '{"username":"manager","password":"2025"}'
+     -d '{"username":"managerbola","password":"bola2025"}'
 
 
 Example response:
@@ -100,17 +101,18 @@ curl -X GET http://127.0.0.1:8000/api/item-value/	View sales summary per item
 🧪 Testing with curl
 ✅ Create a Store Item
 curl -X POST http://127.0.0.1:8000/api/store-items/ \
-     -H "Authorization: Token b97fabe78b0279c4a84cde3573f5def3e82bf870" \
+     -H "Authorization: Token 751069c378c06d0cfd39ec41d0345ab60c649bc3" \
      -H "Content-Type: application/json" \
-     -d '{"item": "Brass", "store_in": 50, "store_out": 10, "cost_price": 1000, "selling_price": 1500}'
+     -d '{"item": "ball", "store_in": 50, "store_out": 10, "cost_price": 1000, "selling_price": 1500}'
 
 ✅ Get all items
-curl -X GET http://127.0.0.1:8000/api/store-items/ \
-     -H "Authorization: Token b97fabe78b0279c4a84cde3573f5def3e82bf870"
 
+
+curl -X GET http://127.0.0.1:8000/api/store-items/ \
+     -H "Authorization: Token 751069c378c06d0cfd39ec41d0345ab60c649bc3"
 ✅ Get daily sales summary
 curl -X GET http://127.0.0.1:8000/api/reports/daily/ \
-     -H "Authorization: Token b97fabe78b0279c4a84cde3573f5def3e82bf870"
+     -H "Authorization: Token 751069c378c06d0cfd39ec41d0345ab60c649bc3"
 
 ✅ Get weekly sales summary
 curl -X GET http://127.0.0.1:8000/api/reports/weekly/ \

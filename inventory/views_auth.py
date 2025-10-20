@@ -1,7 +1,7 @@
 # inventory/views_auth.py
 from django.contrib.auth.models import User
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework import generics
+from rest_framework import generics, status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view, permission_classes
@@ -12,23 +12,10 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from .serializers import UserRegisterSerializer
 
 
 
-
-# -----------------------------
-# USER SERIALIZER (Registration)
-# -----------------------------
-class UserRegisterSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['username', 'email', 'password']
-        extra_kwargs = {'password': {'write_only': True}}
-
-    def create(self, validated_data):
-        user = User.objects.create_user(**validated_data)
-        Token.objects.create(user=user)
-        return user
 
 
 # -----------------------------
@@ -40,11 +27,30 @@ class UserRegisterView(generics.CreateAPIView):
     serializer_class = UserRegisterSerializer
 
     def create(self, request, *args, **kwargs):
+        username = request.data.get("username")
+
+        # Check if username already exists
+        if User.objects.filter(username=username).exists():
+            return Response(
+                {"error": f"Username '{username}' already exists."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Create the user
         response = super().create(request, *args, **kwargs)
-        user = User.objects.get(username=request.data['username'])
-        token, created = Token.objects.get_or_create(user=user)
-        response.data['token'] = token.key
-        return response
+
+        # Generate or get the user's token
+        user = User.objects.get(username=username)
+        token, _ = Token.objects.get_or_create(user=user)
+
+        # Return success response
+        return Response(
+            {
+                "message": f"✅ Registration successful for '{username}'.",
+                "token": token.key
+            },
+            status=status.HTTP_201_CREATED
+        )
 
 
 # -----------------------------

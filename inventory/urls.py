@@ -24,7 +24,7 @@ router.register(r'item-value', ItemValueViewSet, basename='itemvalue')
 # -----------------------------
 urlpatterns = [
     # 1️⃣ All your API endpoints (CRUD)
-    path('api/', include(router.urls)),
+    path('', include(router.urls)),
 
     # 2️⃣ API Authentication routes (for Postman/curl clients)
     path('login/', views_auth.CustomAuthToken.as_view(), name='api_login'),
