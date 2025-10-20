@@ -53,6 +53,7 @@ dill==0.3.9
 diskcache==5.6.3
 distro==1.9.0
 Django==5.2.5
+django-cors-headers==4.9.0
 django-filter==25.2
 django-taggit==6.1.0
 djangorestframework==3.16.1
@@ -289,6 +290,7 @@ webdriver-manager==4.0.1
 webencodings==0.5.1
 Werkzeug==3.0.4
 wheel==0.44.0
+whitenoise==6.11.0
 wrapt==1.16.0
 wsproto==1.2.0
 yarl==1.20.1
